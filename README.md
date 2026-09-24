@@ -18,8 +18,9 @@ project. That is what this page is for.
 2. Answer three questions for as many issues as you like. One is useful; all 80 is
    wonderful. The keyboard works: `1`–`5` for the kind, `a`/`s` for actionable, `j`/`k`
    for "look now", `?` for can't tell, arrow keys to move.
-3. Press **copy my labels for a comment** and paste the result as a reply on the
-   GitHub issue that linked you here.
+3. Press **copy my labels for a comment** and paste the result as a reply on
+   [the Fix Everything discussion](https://github.com/omacom/omarchy/discussions/11192)
+   in the Omarchy repository.
 
 Your answers are kept only in your own browser until you paste them. The page is one
 self-contained file and loads nothing from anywhere else.
@@ -45,4 +46,4 @@ who wrote it; the page only shows it.
 
 They become the answer key for the triage: each label is compared with what the
 automated triage said about the same issue, and the results — where it agrees with
-people and where it does not — will be posted back on the same GitHub issue.
+people and where it does not — will be posted back on the same discussion.
