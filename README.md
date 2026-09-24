@@ -35,6 +35,29 @@ self-contained file and loads nothing from anywhere else.
 
 "Can't tell" is always an answer. It is more useful than a guess.
 
+## How an answer looks
+
+Pressing **copy my labels for a comment** gives you a block like this, one line for
+each issue you answered:
+
+```
+Fix Everything Triage labels · label-80 v1 · @you · 2 issues
+#6878 kind=bug actionable=yes now=yes | note: Upgrading to Quattro silently switches AZERTY users to US when vconsole.conf has only KEYMAP. Root cause, repro and fix are all here, and it hits every non-US upgrader in that state.
+#7613 kind=feature actionable=yes now=no | note: The clipboard manager pastes on Enter by design; the reporter wants copy-only as the default. A behaviour change with a ready diff.
+```
+
+Those two answers are real. They come from a model, Claude Opus 5.5, that read all 80
+issues and labelled each one with a note. The note is optional, but a sentence on what
+decided the call is what makes a disagreement worth reading, whoever wrote it.
+
+The model's answers to the other 78 are on the page, locked until you have copied
+your own labels. After that, **compare with a model's answers** shows them beside
+yours, issue by issue. You can keep labelling, and anything you answer after opening
+them is marked `seen=model` in your block, so it can be counted apart from answers
+nobody influenced. The triage is graded against people's labels; the model's are
+there to compare with. Because the two above are printed here, labels for those two
+issues are counted as seen by everyone.
+
 ## The issues
 
 The 80 were drawn at random, on 2026-09-24, from the 1,964 issues then open on
