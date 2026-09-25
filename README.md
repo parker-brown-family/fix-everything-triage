@@ -15,9 +15,9 @@ project. That is what this page is for.
 
 1. Open the page. It shows 80 open Omarchy issues, one at a time, rendered as GitHub
    shows them.
-2. Answer three questions for as many issues as you like. One is useful; all 80 is
+2. Answer four questions for as many issues as you like. One is useful; all 80 is
    wonderful. The keyboard works: `1`–`5` for the kind, `a`/`s` for actionable, `j`/`k`
-   for "look now", `?` for can't tell, arrow keys to move.
+   for "ahead of the backlog", `d`/`f` for "check privately", `?` for can't tell, arrow keys to move.
 3. Press **send my labels**. The page opens an issue on this repository with your
    answers filled in; say who answered and submit, and a check replies on the issue with
    what it read. Or copy the block and paste it as a reply on
@@ -30,20 +30,21 @@ self-contained file and loads nothing from anywhere else.
 ## Using an agent
 
 If you would rather hand this to your agent, point it at [AGENTS.md](AGENTS.md). It
-reads the 80 issues from [issues.json](issues.json), answers the same three questions,
+reads the 80 issues from [issues.json](issues.json), answers the same four questions,
 and sends the answers as an issue here, saying that an agent answered and which model.
 Agent answers are welcome and are counted apart from people's, because the question is
 whether the sorting agrees with people.
 
-## The three questions
+## The four questions
 
 | Question | Answers |
 |---|---|
 | What kind of item is this? | a defect · a request · someone needs help · a documentation problem · not a work item |
 | Could a maintainer act on it as written, without asking the reporter anything? | yes · no |
-| Should a maintainer look at this now, rather than later or never? | yes · no |
+| Would you put this ahead of ordinary backlog work in the next weekly triage pass, ignoring how many other issues are waiting? | yes · no |
+| Should someone check this privately before it is handled in public? (a secret or private data exposed, or a way past access controls) | yes · no |
 
-"Can't tell" is always an answer. It is more useful than a guess.
+"Can't tell" is always an answer. It is more useful than a guess. The third question was reworded and the fourth added on 2026-09-25, before anyone had sent answers; the old wording asked whether a maintainer should look at it "now", which could be read more than one way.
 
 ## How an answer looks
 
@@ -51,13 +52,14 @@ Pressing **send my labels** gives you a block like this, one line for each issue
 answered:
 
 ```
-Fix Everything Triage labels · label-80 v1 · @you · 2 issues · from the page
-#6878 kind=bug actionable=yes now=yes | note: Upgrading to Quattro silently switches AZERTY users to US when vconsole.conf has only KEYMAP. Root cause, repro and fix are all here, and it hits every non-US upgrader in that state.
-#7613 kind=feature actionable=yes now=no | note: The clipboard manager pastes on Enter by design; the reporter wants copy-only as the default. A behaviour change with a ready diff.
+Fix Everything Triage labels · label-80 v2 · @you · 2 issues · from the page
+#6878 kind=bug actionable=yes now=- safety=- | note: Upgrading to Quattro silently switches AZERTY users to US when vconsole.conf has only KEYMAP. Root cause, repro and fix are all here, and it hits every non-US upgrader in that state.
+#7613 kind=feature actionable=yes now=- safety=- | note: The clipboard manager pastes on Enter by design; the reporter wants copy-only as the default. A behaviour change with a ready diff.
 ```
 
 Those two answers are real. They come from a model, Claude Opus 5.5, that read all 80
-issues and labelled each one with a note. The note is optional, but a sentence on what
+issues and labelled each one with a note. It answered the earlier wording of the third
+question and had no fourth, so those show as `-`, which means unanswered, never "no". The note is optional, but a sentence on what
 decided the call is what makes a disagreement worth reading, whoever wrote it.
 
 The model's answers to the other 78 are on the page, locked until you have copied

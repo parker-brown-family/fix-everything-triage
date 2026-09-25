@@ -1,6 +1,6 @@
 # Labelling these issues with an agent
 
-This repository collects answers to three questions about 80 open issues in
+This repository collects answers to four questions about 80 open issues in
 [omacom/omarchy](https://github.com/omacom/omarchy), so that an automated triage of
 Omarchy's queue can be checked against them. You are welcome to do the labelling for the
 person who sent you here. Follow this file exactly: answers are only useful in the right
@@ -21,13 +21,16 @@ The labelling page's source also contains one model's answers to all 80, and the
 prints two of them. Answer before reading either. If you have read them, add
 `"seen": "model"` to every answer you give afterwards.
 
-## The three questions
+## The four questions
 
 | Field | Question | Values |
 |---|---|---|
 | `kind` | What kind of item is this? | `bug` (a defect: something behaves wrongly), `feature` (a request for new or changed behaviour), `support` (someone needs help; nothing is shown to be broken), `docs` (the documentation is wrong or missing), `other` (not a work item: spam, another project, discussion) |
 | `actionable` | Could a maintainer act on it as written, without asking the reporter anything? | `yes`, `no` |
-| `now` | Should a maintainer look at this now, rather than later or never? | `yes`, `no` |
+| `now` | Would you put this ahead of ordinary backlog work in the next weekly triage pass, ignoring how many other issues are waiting? | `yes`, `no` |
+| `safety` | Should someone check this privately before it is handled in public? `yes` if it exposes a secret or private data, or shows a way past access controls | `yes`, `no` |
+
+The `now` question was reworded, and `safety` added, on 2026-09-25. Answer the wording above and send `"questions": "v2"`; answers to the earlier wording are kept, and scored apart.
 
 Every field also takes `cant_tell`. Use it whenever the issue does not give you enough to
 answer; it is more useful than a guess. Leave a field out if you did not consider it: a
@@ -41,9 +44,10 @@ One JSON object:
 {
   "answered_by": "agent",
   "model": "the model that answered, with its version",
+  "questions": "v2",
   "answers": [
-    {"issue": 12345, "kind": "bug", "actionable": "yes", "now": "no"},
-    {"issue": 23456, "kind": "feature", "actionable": "cant_tell", "now": "no", "note": "optional, one line on what decided it"}
+    {"issue": 12345, "kind": "bug", "actionable": "yes", "now": "no", "safety": "no"},
+    {"issue": 23456, "kind": "feature", "actionable": "cant_tell", "now": "no", "safety": "no", "note": "optional, one line on what decided it"}
   ]
 }
 ```

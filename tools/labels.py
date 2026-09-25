@@ -8,10 +8,16 @@
 Two formats are accepted:
 
 - the block the labelling page copies: a header line starting "Fix Everything Triage labels",
-  then one line per issue, "#<n> kind=<k> actionable=<a> now=<n>", with any further
+  then one line per issue, "#<n> kind=<k> actionable=<a> now=<n> safety=<s>", with any further
   key=value tokens (seen=model) and an optional " | note: ..." at the end;
-- JSON: an array of {"issue", "kind", "actionable", "now", "note"} objects, or an object
-  {"answered_by", "model", "answers": [...]}, bare or inside a fenced block.
+- JSON: an array of {"issue", "kind", "actionable", "now", "safety", "note"} objects, or an
+  object {"answered_by", "model", "questions", "answers": [...]}, bare or inside a fenced block.
+
+The "now" question was reworded on 2026-09-25 (questions v2): *would you put this ahead of
+ordinary backlog work in the next weekly triage pass, ignoring how many other issues are
+waiting?*, and a separate safety question was added. A block whose header says label-80 v1
+answered the earlier "now" question, so its answers are kept as now_v1 and never read as
+the current question. JSON and a block with no header are read as the current version.
 
 Who answered comes from the issue form's "Who answered?" field, the JSON's "answered_by",
 or the page itself for a block copied from it. With none of those it stays undeclared and is
@@ -38,7 +44,8 @@ KIND = {"bug", "feature", "support", "docs", "other"}
 YESNO = {"yes", "no"}
 CANT = {"?", "cant_tell", "can't tell", "cant tell"}
 UNANSWERED = {"-", ""}
-FIELDS = {"kind": "kind", "actionable": "actionable", "now": "now", "needs_maintainer_now": "now"}
+FIELDS = {"kind": "kind", "actionable": "actionable", "now": "now", "needs_maintainer_now": "now", "safety": "safety"}
+QUESTIONS = "v2"  # the current wording of the questions; see the module docstring
 FORM_ANSWERED_BY = {
     "i read the issues and answered myself": "person",
     "my agent answered, and i checked every answer": "agent_checked",
@@ -113,9 +120,9 @@ def _from_json(text: str):
         except ValueError:
             continue
         if isinstance(data, list):
-            return None, None, data
+            return None, None, data, None
         if isinstance(data, dict) and isinstance(data.get("answers") or data.get("labels"), list):
-            return data.get("answered_by"), data.get("model"), data.get("answers") or data.get("labels")
+            return data.get("answered_by"), data.get("model"), data.get("answers") or data.get("labels"), data.get("questions")
     return None
 
 
@@ -137,10 +144,12 @@ def parse(text: str) -> dict:
     if model in (None, "", "_No response_"):
         model = None
 
-    fmt, handle, rows = None, None, []
+    fmt, handle, rows, questions = None, None, [], QUESTIONS
     header = re.search(r"^.*Fix Everything Triage labels.*$", body, re.M)
     if header:
         fmt = "page"
+        v = re.search(r"label-80 (v\d+)", header.group(0))
+        questions = v.group(1) if v else "v1"  # every header the page ever wrote named its version
         h = re.search(r"·\s*(@[\w-]+|anonymous)\s*·", header.group(0))
         handle = h.group(1) if h else None
         if "from the page" in header.group(0) and answered_by is None:
@@ -148,7 +157,7 @@ def parse(text: str) -> dict:
     parsed = None if header else _from_json(body)
     if parsed is not None:
         fmt = "json"
-        j_who, j_model, items = parsed
+        j_who, j_model, items, _q = parsed
         if j_who is not None:
             if j_who not in JSON_ANSWERED_BY:
                 problems.append(f"answered_by “{j_who}” is not one of person, agent_checked, agent")
@@ -158,6 +167,8 @@ def parse(text: str) -> dict:
             else:
                 answered_by = j_who
         model = model or j_model
+        if _q:
+            questions = str(_q)
         for it in items:
             if not isinstance(it, dict):
                 problems.append(f"an entry is not an object: {str(it)[:40]}")
@@ -184,29 +195,35 @@ def parse(text: str) -> dict:
         if SAMPLE and n not in SAMPLE:
             problems.append(f"#{n} is not one of the 80 issues")
             continue
+        now = _value("now", fields.get("now"), problems, n)
         rec = {"kind": _value("kind", fields.get("kind"), problems, n),
                "actionable": _value("actionable", fields.get("actionable"), problems, n),
-               "now": _value("now", fields.get("now"), problems, n),
+               "now": now if questions != "v1" else None,
+               "safety": _value("safety", fields.get("safety"), problems, n),
                "note": (str(note).strip() or None) if note else None,
                "seen_model": bool(seen) or n in ALWAYS_SEEN}
+        if questions == "v1":
+            rec["now_v1"] = now  # the earlier wording of "now": kept, never read as the current question
         if n in answers:
             problems.append(f"#{n} appears more than once; the last one counts")
         answers[n] = rec
     if not answers and not problems:
         problems.append("found no answers: expected the page's block or a JSON array of answers")
-    return {"answered_by": answered_by, "model": model, "handle": handle, "format": fmt,
+    return {"answered_by": answered_by, "model": model, "handle": handle, "format": fmt, "questions": questions,
             "answers": {str(k): v for k, v in sorted(answers.items())}, "problems": problems}
 
 
 def reply(result: dict) -> str:
     n = len(result["answers"])
-    got = sum(1 for a in result["answers"].values() for f in ("kind", "actionable", "now") if a[f] is not None)
+    got = sum(1 for a in result["answers"].values() for f in ("kind", "actionable", "now", "safety", "now_v1") if a.get(f) is not None)
     lines = [f"Thanks. I read **{n} issue{'s' if n != 1 else ''}** ({got} answers in all)."
              if n else "I could not read any answers in this issue yet."]
     who = SAYS.get(result["answered_by"], SAYS[None])
     lines.append(f"\n- Who answered: {who}" + (f", model: {result['model']}" if result["model"] else ""))
     if result["answered_by"] is None and n:
         lines.append("  - Please say who answered: edit the issue and pick an option in the form, or add `\"answered_by\"` to your JSON. Answers with no declaration are kept, and counted apart from people's.")
+    if result.get("questions") == "v1" and n:
+        lines.append("- These came from the page's first version, whose \"now\" question was worded differently. They are kept, and your \"now\" answers are scored apart from answers to the current question.")
     seen = sum(1 for a in result["answers"].values() if a["seen_model"])
     if seen:
         lines.append(f"- Given after seeing a model's answers: {seen}")

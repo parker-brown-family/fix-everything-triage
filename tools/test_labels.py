@@ -18,6 +18,12 @@ Fix Everything Triage labels · label-80 v1 · @someone · 3 issues · from the 
 #100 kind=support actionable=no now=no seen=model
 ```"""
 
+PAGE_V2 = """```
+Fix Everything Triage labels · label-80 v2 · @someone · 2 issues · from the page
+#883 kind=bug actionable=yes now=yes safety=no
+#3893 kind=feature actionable=? now=- safety=? | note: needs a design call first
+```"""
+
 FORM = """### Who answered?
 
 My agent answered, and I did not check
@@ -44,8 +50,31 @@ class Parse(unittest.TestCase):
         self.assertEqual(r["format"], "page")
         self.assertEqual(r["answered_by"], "page")
         self.assertEqual(r["handle"], "@someone")
-        self.assertEqual(r["answers"]["883"], {"kind": "bug", "actionable": "yes", "now": "no", "note": None, "seen_model": False})
+        # a label-80 v1 block answered the earlier "now" question: kept as now_v1, never as now
+        self.assertEqual(r["questions"], "v1")
+        self.assertEqual(r["answers"]["883"], {"kind": "bug", "actionable": "yes", "now": None, "safety": None,
+                                               "note": None, "seen_model": False, "now_v1": "no"})
         self.assertEqual(r["problems"], [])
+
+    def test_current_page_block_with_safety(self):
+        r = labels.parse(PAGE_V2)
+        self.assertEqual(r["questions"], "v2")
+        self.assertEqual(r["answers"]["883"], {"kind": "bug", "actionable": "yes", "now": "yes", "safety": "no",
+                                               "note": None, "seen_model": False})
+        self.assertEqual(r["answers"]["3893"]["safety"], "cant_tell")
+        self.assertIsNone(r["answers"]["3893"]["now"])
+        self.assertEqual(r["problems"], [])
+
+    def test_old_version_is_said_in_the_reply(self):
+        self.assertIn("worded differently", labels.reply(labels.parse(PAGE)))
+        self.assertNotIn("worded differently", labels.reply(labels.parse(PAGE_V2)))
+
+    def test_json_is_the_current_questions_unless_it_says_otherwise(self):
+        r = labels.parse('{"answered_by": "agent", "answers": [{"issue": 883, "now": "yes", "safety": "yes"}]}')
+        self.assertEqual((r["questions"], r["answers"]["883"]["now"], r["answers"]["883"]["safety"]), ("v2", "yes", "yes"))
+        r = labels.parse('{"answered_by": "agent", "questions": "v1", "answers": [{"issue": 883, "now": "yes"}]}')
+        self.assertIsNone(r["answers"]["883"]["now"])
+        self.assertEqual(r["answers"]["883"]["now_v1"], "yes")
 
     def test_cant_tell_and_unanswered_stay_apart(self):
         a = labels.parse(PAGE)["answers"]["3893"]

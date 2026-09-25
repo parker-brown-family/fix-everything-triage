@@ -1,5 +1,6 @@
 {
  "sample": "label-80 v1",
+ "questions": "v2 (see AGENTS.md)",
  "repo": "omacom/omarchy",
  "drawn": "2026-09-24",
  "note": "Judge each issue from its title and body as written here; later comments or a closure do not count.",
