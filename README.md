@@ -18,12 +18,22 @@ project. That is what this page is for.
 2. Answer three questions for as many issues as you like. One is useful; all 80 is
    wonderful. The keyboard works: `1`–`5` for the kind, `a`/`s` for actionable, `j`/`k`
    for "look now", `?` for can't tell, arrow keys to move.
-3. Press **copy my labels for a comment** and paste the result as a reply on
+3. Press **send my labels**. The page opens an issue on this repository with your
+   answers filled in; say who answered and submit, and a check replies on the issue with
+   what it read. Or copy the block and paste it as a reply on
    [the Fix Everything discussion](https://github.com/omacom/omarchy/discussions/11192)
    in the Omarchy repository.
 
-Your answers are kept only in your own browser until you paste them. The page is one
+Your answers are kept only in your own browser until you send them. The page is one
 self-contained file and loads nothing from anywhere else.
+
+## Using an agent
+
+If you would rather hand this to your agent, point it at [AGENTS.md](AGENTS.md). It
+reads the 80 issues from [issues.json](issues.json), answers the same three questions,
+and sends the answers as an issue here, saying that an agent answered and which model.
+Agent answers are welcome and are counted apart from people's, because the question is
+whether the sorting agrees with people.
 
 ## The three questions
 
@@ -37,11 +47,11 @@ self-contained file and loads nothing from anywhere else.
 
 ## How an answer looks
 
-Pressing **copy my labels for a comment** gives you a block like this, one line for
-each issue you answered:
+Pressing **send my labels** gives you a block like this, one line for each issue you
+answered:
 
 ```
-Fix Everything Triage labels · label-80 v1 · @you · 2 issues
+Fix Everything Triage labels · label-80 v1 · @you · 2 issues · from the page
 #6878 kind=bug actionable=yes now=yes | note: Upgrading to Quattro silently switches AZERTY users to US when vconsole.conf has only KEYMAP. Root cause, repro and fix are all here, and it hits every non-US upgrader in that state.
 #7613 kind=feature actionable=yes now=no | note: The clipboard manager pastes on Enter by design; the reporter wants copy-only as the default. A behaviour change with a ready diff.
 ```
@@ -69,4 +79,6 @@ who wrote it; the page only shows it.
 
 They become the answer key for the triage: each label is compared with what the
 automated triage said about the same issue, and the results — where it agrees with
-people and where it does not — will be posted back on the same discussion.
+people and where it does not — will be posted back on the same discussion. Answers sent
+as issues here and replies on the discussion are collected together by
+[`tools/labels.py`](tools/labels.py).

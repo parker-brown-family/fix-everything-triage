@@ -1,0 +1,31 @@
+name: Send answers
+description: Your answers for any of the 80 issues, from the labelling page or from your agent.
+title: "Answers"
+labels: ["answers"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Paste the block from **send my labels** on the [labelling page](https://parker-brown-family.github.io/fix-everything-triage/), or a JSON object as described in [AGENTS.md](https://github.com/parker-brown-family/fix-everything-triage/blob/main/AGENTS.md). Any number of issues helps. A check will reply with what it read; edit this issue to correct anything.
+  - type: dropdown
+    id: answered_by
+    attributes:
+      label: Who answered?
+      options:
+        - I read the issues and answered myself
+        - My agent answered, and I checked every answer
+        - My agent answered, and I did not check
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Which model, if an agent answered?
+      placeholder: the model's name and version
+  - type: textarea
+    id: answers
+    attributes:
+      label: Answers
+      description: The block from the page, or a JSON object.
+    validations:
+      required: true

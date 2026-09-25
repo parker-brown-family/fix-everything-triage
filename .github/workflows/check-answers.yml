@@ -1,0 +1,29 @@
+name: Check submitted answers
+on:
+  issues:
+    types: [opened, edited]
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check:
+    # Only issues that carry answers: the form's label, the page's block, or answer JSON.
+    if: >-
+      contains(github.event.issue.labels.*.name, 'answers') ||
+      contains(github.event.issue.body, 'Fix Everything Triage labels') ||
+      contains(github.event.issue.body, '"kind"')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch the checker
+        run: git clone --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" src
+      - name: Read the answers
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: python3 src/tools/labels.py check --env BODY --markdown --issues src/issues.json > reply.md
+      - name: Reply and label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$NUMBER" --repo "$GITHUB_REPOSITORY" --edit-last --create-if-none --body-file reply.md
+          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label answers
